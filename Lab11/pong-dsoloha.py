@@ -1,10 +1,8 @@
-# Pong
-# Dan Soloha
-# 11/08/2019
-
-import pygame
 import random
 import sys
+
+import pygame
+
 
 class Paddle(pygame.Rect):
     def __init__(self, velocity, up_key, down_key, *args, **kwargs):
@@ -45,18 +43,22 @@ class Pong:
 
     BALL_WIDTH = 10
     BALL_VELOCITY = 10
+    BALL_ANGLE = 0
 
-    COLOR = (255, 255, 255)
+    COLOUR = (255, 255, 255)
 
     def __init__(self):
-        pygame.init()
+        pygame.init()  # Start the pygame instance.
 
+        # Setup the screen
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.clock = pygame.time.Clock()
 
+        # Create the player objects.
+
         self.paddles = []
         self.balls = []
-        self.paddles.append(Paddle(
+        self.paddles.append(Paddle(  # The left paddle
             self.BALL_VELOCITY,
             pygame.K_w,
             pygame.K_s,
@@ -66,7 +68,7 @@ class Pong:
             self.PADDLE_HEIGHT
         ))
 
-        self.paddles.append(Paddle(
+        self.paddles.append(Paddle(  # The right paddle
             self.BALL_VELOCITY,
             pygame.K_UP,
             pygame.K_DOWN,
@@ -76,7 +78,7 @@ class Pong:
             self.PADDLE_HEIGHT
         ))
 
-        self.paddles.append(Ball(
+        self.balls.append(Ball(
             self.BALL_VELOCITY,
             self.WIDTH / 2 - self.BALL_WIDTH / 2,
             self.HEIGHT / 2 - self.BALL_WIDTH / 2,
@@ -84,12 +86,13 @@ class Pong:
             self.BALL_WIDTH
         ))
 
-        self.central_line = pygame.Rect(self.WIDTH / 2, 0, 1, self.HEIGHT)
+        self.central_line = pygame.Rect(self.WIDTH/2, 0, 1, self.HEIGHT)
 
     def check_ball_hits_wall(self):
         for ball in self.balls:
             if ball.x > self.WIDTH or ball.x < 0:
-                sys.exit()
+                sys.exit(1)
+
             if ball.y > self.HEIGHT - self.BALL_WIDTH or ball.y < 0:
                 ball.angle = -ball.angle
 
@@ -104,24 +107,31 @@ class Pong:
     def game_loop(self):
         while True:
             for event in pygame.event.get():
+                # Add some extra ways to exit the game.
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     return
 
+            self.check_ball_hits_paddle()
+            self.check_ball_hits_wall()
+
+            # Redraw the screen.
             self.screen.fill((0, 0, 0))
 
             for paddle in self.paddles:
                 paddle.move_paddle(self.HEIGHT)
-                pygame.draw.rect(self.screen, self.COLOR, paddle)
+                pygame.draw.rect(self.screen, self.COLOUR, paddle)
 
+            # We know we're not ending the game so lets move the ball here.
             for ball in self.balls:
                 ball.move_ball()
-                pygame.draw.rect(self.screen, self.COLOR, ball)
+                pygame.draw.rect(self.screen, self.COLOUR, ball)
 
-            pygame.draw.rect(self.screen, self.COLOR, self.central_line)
+            pygame.draw.rect(self.screen, self.COLOUR, self.central_line)
 
             pygame.display.flip()
             self.clock.tick(60)
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     pong = Pong()
     pong.game_loop()
