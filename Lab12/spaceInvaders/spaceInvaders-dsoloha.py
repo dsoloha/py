@@ -5,7 +5,7 @@
 import math, random
 from superwires import games, color
 
-games.init(screen_width = 1280, screen_height = 720, fps = 60)
+games.init(screen_width = 640, screen_height = 480, fps = 60)
 
 class Wrapper(games.Sprite):
     """A sprite that can wrap around the screen"""
@@ -57,19 +57,20 @@ class Ship(Collider):
 
     def __init__(self, game, x, y):
         """Initialize ship sprite"""
-        super(Ship, self).__init__(image=Ship.image, x=x, y=y)
+        super(Ship, self).__init__(image = Ship.image, x = x, y = y)
         self.missile_wait = 0
         self.game = game
+
+    def update(self):
+        # if waiting until ship can fire, decrease wait
+        if self.missile_wait > 0:
+            self.missile_wait -= 1
 
     def fire(self):
         """Fire missile if possible"""
         new_missile = Missile(self.x, self.y, self.angle)
         games.screen.add(new_missile)
         self.missile_wait = Ship.MISSILE_DELAY
-
-        # if waiting until ship can fire, decrease wait
-        if self.missile_wait > 0:
-            self.missile_wait -= 1
 
     def die(self):
         """Destroy ship and end game"""
@@ -97,9 +98,10 @@ class Player(Ship):
             angle = self.angle * math.pi / 180  # convert to radians
             self.dx += Ship.VELOCITY_STEP * math.sin(angle)
             self.dy += Ship.VELOCITY_STEP * -math.cos(angle)
+
         # fire missile if spacebar pressed
         if games.keyboard.is_pressed(games.K_SPACE) and self.missile_wait == 0:
-            super(Ship, self).fire()
+            super(Player, self).fire()
 
         # cap velocity in each direction
         self.dx = min(max(self.dx, -Ship.VELOCITY_MAX), Ship.VELOCITY_MAX)
@@ -115,10 +117,8 @@ class Alien(Ship):
     def __init__(self, game, x, y):
         """Initialize alien sprite"""
         super(Alien, self).__init__(
-            image = Ship.image,
-            x = x, y = y,
-            dx = random.choice([1, -1]) * Alien.SPEED * random.random(),
-            dy = random.choice([1, -1]) * Alien.SPEED * random.random())
+            game = game,
+            x = x, y = y)
 
         self.game = game
         Alien.total += 1
@@ -216,10 +216,10 @@ class Game(object):
         games.screen.add(self.score)
 
         # create player's ship
-        self.ship = Ship(game=self,
+        self.player = Player(game=self,
                          x=games.screen.width / 2,
                          y=games.screen.height / 2)
-        games.screen.add(self.ship)
+        games.screen.add(self.player)
 
     def play(self):
         """Play the game"""
@@ -257,8 +257,8 @@ class Game(object):
             y_distance = random.randrange(y_min, games.screen.height - y_min)
 
             # calculate location based on distance
-            x = self.ship.x + x_distance
-            y = self.ship.y + y_distance
+            x = self.player.x + x_distance
+            y = self.player.y + y_distance
 
             # wrap around screen if necessary
             x %= games.screen.width
