@@ -61,6 +61,16 @@ class Ship(Collider):
         self.missile_wait = 0
         self.game = game
 
+    def fire(self):
+        """Fire missile if possible"""
+        new_missile = Missile(self.x, self.y, self.angle)
+        games.screen.add(new_missile)
+        self.missile_wait = Ship.MISSILE_DELAY
+
+        # if waiting until ship can fire, decrease wait
+        if self.missile_wait > 0:
+            self.missile_wait -= 1
+
     def die(self):
         """Destroy ship and end game"""
         self.game.end()
@@ -87,16 +97,9 @@ class Player(Ship):
             angle = self.angle * math.pi / 180  # convert to radians
             self.dx += Ship.VELOCITY_STEP * math.sin(angle)
             self.dy += Ship.VELOCITY_STEP * -math.cos(angle)
-
         # fire missile if spacebar pressed
         if games.keyboard.is_pressed(games.K_SPACE) and self.missile_wait == 0:
-            new_missile = Missile(self.x, self.y, self.angle)
-            games.screen.add(new_missile)
-            self.missile_wait = Ship.MISSILE_DELAY
-
-        # if waiting until ship can fire, decrease wait
-        if self.missile_wait > 0:
-            self.missile_wait -= 1
+            super(Ship, self).fire()
 
         # cap velocity in each direction
         self.dx = min(max(self.dx, -Ship.VELOCITY_MAX), Ship.VELOCITY_MAX)
