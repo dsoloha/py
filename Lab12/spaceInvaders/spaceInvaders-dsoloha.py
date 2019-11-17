@@ -139,11 +139,11 @@ class Alien(Ship):
             super(Alien, self).fire()
 
         # turn randomly
-        random_angle = random.randint(1, 30)
-        if random_angle < 20:
-            self.angle += Ship.ROTATION_STEP * 2
-        elif random_angle > 10:
-            self.angle -= Ship.ROTATION_STEP * 2
+        random_angle = random.randint(1, 60)
+        if random_angle < 45:
+            self.angle += Ship.ROTATION_STEP
+        elif random_angle > 15:
+            self.angle -= Ship.ROTATION_STEP
 
         # change velocity components based on ship's angle
             angle = self.angle * math.pi / 180  # convert to radians
