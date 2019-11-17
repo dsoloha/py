@@ -84,7 +84,7 @@ class Asteroid(Wrapper):
                                         y = self.y,
                                         size = self.size - 1)
             games.screen.add(new_asteroid)
-        super(Asteroid, self).die
+        super(Asteroid, self).die()
         Asteroid.total -= 1
         self.game.score.value += int(Asteroid.POINTS / self.size)
         self.game.score.right = games.screen.width - 10

@@ -61,11 +61,6 @@ class Ship(Collider):
         self.missile_wait = 0
         self.game = game
 
-    def update(self):
-        # if waiting until ship can fire, decrease wait
-        if self.missile_wait > 0:
-            self.missile_wait -= 1
-
     def fire(self):
         """Fire missile if possible"""
         new_missile = Missile(self.x, self.y, self.angle)
@@ -73,8 +68,7 @@ class Ship(Collider):
         self.missile_wait = Ship.MISSILE_DELAY
 
     def die(self):
-        """Destroy ship and end game"""
-        self.game.end()
+        """Destroy ship"""
         super(Ship, self).die()
 
 class Player(Ship):
@@ -99,6 +93,10 @@ class Player(Ship):
             self.dx += Ship.VELOCITY_STEP * math.sin(angle)
             self.dy += Ship.VELOCITY_STEP * -math.cos(angle)
 
+        # if waiting until ship can fire, decrease wait
+        if self.missile_wait > 0:
+            self.missile_wait -= 1
+
         # fire missile if spacebar pressed
         if games.keyboard.is_pressed(games.K_SPACE) and self.missile_wait == 0:
             super(Player, self).fire()
@@ -107,10 +105,14 @@ class Player(Ship):
         self.dx = min(max(self.dx, -Ship.VELOCITY_MAX), Ship.VELOCITY_MAX)
         self.dy = min(max(self.dy, -Ship.VELOCITY_MAX), Ship.VELOCITY_MAX)
 
+    def die(self):
+        """Destroy the ship and end the game"""
+        super(Player, self).die()
+        self.game.end()
+
 class Alien(Ship):
     """An alien ship"""
-    SPEED = 2
-    SPAWN = 2
+    VELOCITY_FACTOR = 1
     POINTS = 30
     total = 0
 
@@ -127,9 +129,30 @@ class Alien(Ship):
         if Alien.total == 0:
             self.game.advance()
 
+    def update(self):
+        # if waiting until ship can fire, decrease wait
+        if self.missile_wait > 0:
+            self.missile_wait -= 1
+
+        # fire
+        if self.missile_wait == 0:
+            super(Alien, self).fire()
+
+        # turn randomly
+        random_angle = random.randint(1, 30)
+        if random_angle < 20:
+            self.angle += Ship.ROTATION_STEP * 2
+        elif random_angle > 10:
+            self.angle -= Ship.ROTATION_STEP * 2
+
+        # change velocity components based on ship's angle
+            angle = self.angle * math.pi / 180  # convert to radians
+            self.dx = Alien.VELOCITY_FACTOR * math.sin(angle)
+            self.dy = Alien.VELOCITY_FACTOR * -math.cos(angle)
+
     def die(self):
         """Destroy alien"""
-        super(Alien, self).die
+        super(Alien, self).die()
         Alien.total -= 1
         self.game.score.value += int(Alien.POINTS)
         self.game.score.right = games.screen.width - 10
@@ -266,7 +289,7 @@ class Game(object):
 
             # create the alien
             new_alien = Alien(game = self,
-                                    x = x, y = y)
+                              x = x, y = y)
             games.screen.add(new_alien)
 
             i += 1
