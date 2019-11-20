@@ -2,7 +2,7 @@
 # Demonstrates creating an animation from a sprite sheet
 
 import sys, os, math
-from livewires import games
+from superwires import games
 import pygame
 from spriteUtils import *
 
